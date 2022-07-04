@@ -12,6 +12,9 @@ import tpAPI.tp5.meteo_api_object.WeatherQuery;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import tpAPI.tp5.dto.ForecastDto;
 
 
 @Controller
@@ -43,7 +46,8 @@ public class MeteoController {
         LocalDate date = LocalDate.now();       //récupérer la date d'aujourd'hui
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd LLLL yyyy");    //Permet de formatter la date sous la forme jour mois année
 
-
+ 
+        List<ForecastDto> result=new ArrayList<ForecastDto>();
         //on récupère les prévisions météo de chaque jour pour les envoyer au template
         for (int i = 0; i < meteo.getForecast().length; i++) {
             int weather_code, tmin, tmax, probarain;
@@ -54,14 +58,16 @@ public class MeteoController {
             probarain = meteo.getForecast()[i].getProbarain();      //probabilité de pluie en %
 
             //envoyer chaque attribut au template (le numéro _i permet de les différencier)
-            model.addAttribute("weather_" + i, weather_code);
-            model.addAttribute("tmin_" + i, tmin);
-            model.addAttribute("tmax_" + i, tmax);
-            model.addAttribute("probarain_" + i, probarain);
-            model.addAttribute("date_" + i, date.plusDays(i).format(formatter));    //.format(formatter) permet d'envoyer la date au formattage défini précédement
-            model.addAttribute("icon_" + i, weatherIconConverter(weather_code));
-
+            ForecastDto fd=new ForecastDto();
+            fd.setWeather(weather_code);
+            fd.setTmin(tmin);
+            fd.setTmax(tmax);
+            fd.setProbarain(probarain);
+            fd.setDate(date.plusDays(i).format(formatter));
+            fd.setIcon(weatherIconConverter(weather_code));
+            result.add(fd);
         }
+        model.addAttribute("forecastList", result);
 
         return "meteo";
     }
